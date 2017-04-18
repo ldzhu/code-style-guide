@@ -10,7 +10,7 @@
 除非有其他特殊的阐明，在本文档中：
 - *comment*这个术语指的是*implementation comments*。我们不使用*documentation comments*
 这个词汇，而是使用*JSDoc*这种常见的、程序员和机器都能读懂的词汇。*JSDoc*通常是
-`/** ... */`这种形式。
+`/** ... */`这种形式([JSDoc](https://github.com/jsdoc3/jsdoc)也是一种文档自动化工具)。
 
 - 当使用*must(绝对要求这样做)*, *must not(绝对不要求这样做)*, *should(一般情
 况下应该这样做，但是在某些特定情况下可以忽视这个要求)*, *should not(一般情况下
