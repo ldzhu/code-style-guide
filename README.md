@@ -1,1 +1,2 @@
-Google 代码规范中文翻译
+# Google style guide 中文翻译
+

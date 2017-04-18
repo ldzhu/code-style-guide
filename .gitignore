@@ -7,3 +7,6 @@
 *.iml
 out
 gen
+
+# gitbook files
+_book
