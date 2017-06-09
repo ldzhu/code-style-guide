@@ -257,7 +257,8 @@ Sub.foo();  // illegal: don't call static methods on subclasses that don't defin
 ```
 
 #### 旧式类声明
-
+虽然ES6类是首选，但是有些情况下使用ES6类可能不可行。例如：
+- 如果存在或者即将存在某些子类，包括创建子类的框架，不能立即改成ES6类的语法。如果这样一个类使用ES语法，所有没有使用ES6类语法的下游子类也需要同时修改。
 
 
 
