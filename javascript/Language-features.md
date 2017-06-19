@@ -259,10 +259,183 @@ Sub.foo();  // illegal: don't call static methods on subclasses that don't defin
 #### 旧式类声明
 虽然ES6类是首选，但是有些情况下使用ES6类可能不可行。例如：
 - 如果存在或者即将存在某些子类，包括创建子类的框架，不能立即改成ES6类的语法。如果这样一个类使用ES语法，所有没有使用ES6类语法的下游子类也需要同时修改。
-- 在调用超类构造函数之前需要知道框架的，因为具有ES6超类的构造函数this在调用super返回之前才能访问实例值
+- 在调用超类构造函数之前，框架需要知道一个已知的`this`值，因为具有ES6超类的构造函数直到`super`调用返回之前无法访问实例的`this`，
 
+在所有其他方面，本样式指南仍然适用于此规则：`let`,` const`，默认参数，`rest`参数和箭头函数都应该在合适的时候使用。
 
+`goog.defineClass`允许类似ES6类语法的类的定义：
+```javascript
+let C = goog.defineClass(S, {
+  /**
+   * @param {string} value
+   */
+  constructor(value) {
+    S.call(this, 2);
+    /** @const */
+    this.prop = value;
+  },
 
+  /**
+   * @param {string} param
+   * @return {number}
+   */
+  method(param) {
+    return 0;
+  },
+});
+```
+
+或者，虽然`goog.defineClass`应该是所有新代码的首选，但也允许使用更传统的语法。
+
+```javascript
+/**
+  * @constructor @extends {S}
+  * @param {string} value
+  */
+function C(value) {
+  S.call(this, 2);
+  /** @const */
+  this.prop = value;
+}
+goog.inherits(C, S);
+
+/**
+ * @param {string} param
+ * @return {number}
+ */
+C.prototype.method = function(param) {
+  return 0;
+};
+```
+
+每个实例属性应该在构造函数中定义，如果有一个超类，应该在调用超类构造函数之后定义实例属性。应该在构造函数的原型上定义方法。
+
+正确定义构造函数原型层级结构比首次定义构造函数更难。因此，最好使用`the Closeure Library`库中的`goog.inherits`。
+
+#### 不要直接操纵原型
+类关键字允许比定义原型属性更信息、更可读的类定义。普通的实现代码没有理由操纵这些对象，尽管他们对于定义“5.4.5旧式类声明”章节中定义的`@record`接口和类仍然很有用。明确禁止混合和修改内置对象的原型。
+
+例外：框架代码（例如`Polymer`或者`Angular`）可能需要使用原型，不应该为了避免使用原型而采取更糟糕的解决办法。
+
+例外：在接口中定义字段（请参见“5.4.9 接口”章节）。
+
+#### `Getters`和`Setters`
+不要使用[JavaScript的getter和setter属性](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get)。他们可能令人惊讶和难以推理，并且在编译器中的支持有限。提供普通方法替代。
+
+例外：当使用数据绑定框架（如`Angular`和`Polymer`）时，可以谨慎使用getters和setters。但是请注意，编译器的支持有限。当使用他们时，必须在类或者对象字面量中使用 `get foo()`或者`set foo(value)`定义，或者如果不可能，则使用`Object.defineProperties`进行定义。不要使用`Object.defineProperty`， 这会干扰属性重命名。getters不能改变可观察状态。
+
+非法的：
+```javascript
+class Foo {
+  get next() {return this.nextId++;}
+}
+```
+
+#### 重写`toString`
+`toString`方法可能被重写，但是必须始终是成功执行的，并且不能有可见的副作用。
+
+> 提示：特别地方在toString方法里面调用其他方法，因为特殊条件下可能导致死循环。
+
+#### 接口
+接口可以用`@interface`或者`@record`声明。通过`@record`声明的接口可以被类或者对象字面量显式（即通过`@implements`）或隐式的继承。
+
+接口的所有非静态方法体必须为空块。字段必须在接口体之后定义为原型上的存根。
+
+示例：
+```javascript
+/**
+ * Something that can frobnicate.
+ * @record
+ */
+class Frobnicator {
+  /**
+   * Performs the frobnication according to the given strategy.
+   * @param {!FrobnicationStrategy} strategy
+   */
+  frobnicate(strategy) {}
+}
+
+/** @type {number} The number of attempts before giving up. */
+Frobnicator.prototype.attempts;
+```
+
+### 函数
+
+#### 顶级函数
+导出的函数可以直接定义在`exports`对象上，也可以在局部定义然后单独导出。鼓励使用后者，局部定义的函数不能被声明为`@private`。
+
+示例：
+```javascript
+/** @return {number} */
+function helperFunction() {
+  return 42;
+}
+/** @return {number} */
+function exportedFunction() {
+  return helperFunction() * 2;
+}
+/**
+ * @param {string} arg
+ * @return {number}
+ */
+function anotherExportedFunction(arg) {
+  return helperFunction() / arg.length;
+}
+/** @const */
+exports = {exportedFunction, anotherExportedFunction};
+```
+
+```javascript
+/** @param {string} arg */
+exports.foo = (arg) => {
+  // do some stuff ...
+};
+```
+
+#### 嵌套函数和闭包
+函数可能包含嵌套函数定义。如果给函数一个名称是有用的，那么他应该被分配给一个本地的`const`。
+
+#### 箭头函数
+箭头函数提供了简洁的语法，并解决了许多与`this`相关的难题。相对于`function`关键字更倾向于使用箭头函数来定义函数，特别是对于嵌套函数（参见“5.3.5方法简写”章节）。
+
+相对于`f.bind(this)`，特别是`goog.bind(f, this)`，更倾向于使用箭头函数。避免写`const self = this`这种语句。箭头函数对回调函数特别有用，有时会传递意外的附加参数。
+
+箭头的右侧可以是单个表达式或者块。如果只有一个非结构化的参数，参数周围的括号是可选的。
+
+>提示：对只有一个参数的箭头函数参数仍然使用括号是最佳实践。因为当增加一个参数而忘记添加括号时，代码可能仍然会正常合理的解析（但是不是我们想要的逻辑，是错误的）。
+
+#### 生成器
+生成器启用了许多有用的抽象，可以根据需要使用。
+
+当定义生成器函数时，将`*`添加到`function`关键字（如果存在）后面，并将其与函数名称之间使用一个空格隔开。当使用委托`yields`时，将`*`添加到`yield`关键字。
+
+示例：
+```javascript
+/** @return {!Iterator<number>} */
+function* gen1() {
+  yield 42;
+}
+
+/** @return {!Iterator<number>} */
+const gen2 = function*() {
+  yield* gen1();
+}
+
+class SomeClass {
+  /** @return {!Iterator<number>} */
+  * gen() {
+    yield 42;
+  }
+}
+```
+
+#### 参数
+必须在函数定义之前的JSDoc中使用JSDoc注解定义函数参数类型，除了在省略所有类型的`@overrides`相同签名的情况下。
+
+参数类型可以在行内指定，紧接在参数名称之前（如`(/** number */ foo, /** string */ bar) => foot + bar;`）。行内指定的方式和通过`@param`类型注解的方式不能在同一个函数定义内混用。
+
+##### 默认参数
+参数列表中的可选参数允许使用`equals`运算符。
 
 
 
