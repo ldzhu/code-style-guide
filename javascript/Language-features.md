@@ -435,21 +435,55 @@ class SomeClass {
 参数类型可以在行内指定，紧接在参数名称之前（如`(/** number */ foo, /** string */ bar) => foot + bar;`）。行内指定的方式和通过`@param`类型注解的方式不能在同一个函数定义内混用。
 
 ##### 默认参数
-参数列表中的可选参数允许使用`equals`运算符。
+参数列表中的可选参数允许使用`=`运算符。可选参数必须在`=`两边都包含空格，可以像所需参数一样命名（即不带`opt_`前缀），在JSDoc类型注释的所需参数后添加`=`后缀，不使用会产生可观察到的副作用的初始化。所有的可选参数在函数定义时必须有一个默认值，即使值是`undefined`。
 
+示例：
+```javascript
+/**
+ * @param {string} required This parameter is always needed.
+ * @param {string=} optional This parameter can be omitted.
+ * @param {!Node=} node Another optional parameter.
+ */
+function maybeDoSomething(required, optional = '', node = undefined) {}
+```
 
+谨慎使用默认参数。当存在不具有自然顺序的可选参数时，更倾向于使用解构（参见“5.3.7 解构”章节）来创建可读API。
 
+>注意：与Python的默认参数不同，可以使用返回新的可变对象（如`{}`或`[]`）的初始化函数，因为每次使用默认值都会对初始化函数重新求值，所以一个对象不会在调用之间共享。
 
+>提示：包括函数调用在内的任意表达式都可以用作初始化函数，但这些表达式应该因可能的简单。避免暴露共享可变状态的初始化函数，因为这样很容易在函数调用之间引入无意的耦合。
 
+##### 剩余参数
+使用剩余参数代替访问`arguments`变量。在JSDoc中剩余参数的类型是添加一个`...`前缀。剩余参数必须是参数列表中的最后一个参数。在`...`和参数名之间没有空格。不要将剩余参数命名为`var_args`。永远不要将一个局部变量或者参数命名为`arguments`，这会混淆内置的`arguments`参数。
 
+示例：
+```javascript
+/**
+ * @param {!Array<string>} array This is an ordinary parameter.
+ * @param {...number} numbers The remainder of arguments are all numbers.
+ */
+function variadic(array, ...numbers) {}
+```
 
+#### 返回值
+除了使用`@override`省略所有类型的相同函数签名的情况，必须在函数定义上方的JSDoc文档注释中直接指定函数的返回值类型。
 
+#### 泛型
+在必要的时候在类定义上方的JSDoc文档注释中使用`@template TYPE`来声明泛型函数和方法。
 
+#### 展开运算符
+函数调用可以使用展开运算符（`...`）。当一个数组或可迭代对象被解包成一个可变函数的多个参数时，倾向于使用展开运算符而不是`Function.prototype.apply`。在`...`后面没有空格。
 
+示例：
+```javascript
+function myFunction(...elemments) {};
+myFunction(...array, ...iterable, ...generator());
+```
 
+### 字符串字面量
 
+#### 使用单引号
+普通字符串字面量使用单引号（`'`）分隔，而不是双引号（`"`）。
 
-
-
-
+>提示：如果一个字符串包含一个
 
