@@ -485,5 +485,146 @@ myFunction(...array, ...iterable, ...generator());
 #### 使用单引号
 普通字符串字面量使用单引号（`'`）分隔，而不是双引号（`"`）。
 
->提示：如果一个字符串包含一个
+>提示：如果一个字符串包含一个单引号，考虑使用模板字符串以避免转义。
 
+普通字符串字面量不能跨越多行。
+
+#### 模板字符串
+在复杂的字符串连接中使用模板字符串（用\`分隔），特别是如果涉及多个字符串字面量。模板字符串可以跨越多行。
+
+如果模板字符串跨越多行，则不需要遵循封闭块的缩进规则，尽管添加的空格可能不重要。
+
+示例：
+```javascript
+function arithmetic(a, b) {
+  return `Here is a table of arithmetic operations:
+${a} + ${b} = ${a + b}
+${a} - ${b} = ${a - b}
+${a} * ${b} = ${a * b}
+${a} / ${b} = ${a / b}`;
+}
+```
+
+#### 不使用行延续
+不要在普通或者模板字符串字面量中使用行延续（也就是在字符串中使用反斜杠结束一行）。即使ES5允许这样做，如果在斜杠之后有任何尾随的空格，它可能会导致棘手的错误，而且对代码阅读者而言并不明显。
+
+非法的：
+```javascript
+const longString = 'This is a very long string that far exceeds the 80 \
+    column limit. It unfortunately contains long stretches of spaces due \
+    to how the continued lines are indented.';
+```
+
+相反，应该这样写
+```javascript
+const longString = 'This is a very long string that far exceeds the 80 ' +
+    'column limit. It does not contains long stretches of spaces since ' +
+    'the concatenated strings are cleaner.';
+```
+
+### 数字字面量
+数字可以以十进制、十六进制、八进制或二进制表示。分别为十六进制、八进制和二进制添加准确的小写字母的（`0x`, `0o`, `ob`）前缀。除非后面立即跟着`x`, `o`或者`b`，否则字符串不要以`0`开头。
+
+### 控制结构
+
+#### `for`循环
+ES6语言现在有三种不同的for循环。所有类型的循环都可以使用，但`for-of`循环应该尽可能的优先选择。
+
+`for-in`循环可能只能用在词典风格的对象上（参见“5.3.3  对象的`key`不要混用引号”章节），不应该用于遍历数组。`Object.prototype.hasOwnProperty`应该用于`for-in`循环来排除不需要的原型属性。尽可能的优先选择`for-of`和`Object.keys`而不是`for-in`。
+
+#### 异常
+异常是语言的重要组成部分，应该在异常场景发生时使用。总是抛出`Error`或者`Error`类的子类：不要抛出字符串字面量或者其他的对象。当构造一个`Error`时总是使用`new`关键字。
+
+自定义异常提供了一种从函数传递额外错误信息的好方法。应该在原生`Error`类型不足的地方定义和使用自定义异常。
+
+倾向于通过特殊错误处理方法（例如传递错误容器引用类型或返回具有错误属性的对象）抛出异常。
+
+##### 空`catch`块
+绝大多数情况下对一个被捕获的异常什么事情都不做是不正确的。某些情况下如果真正在`catch`块中什么都不做，必须在注释中说明理由。
+
+示例：
+```javascript
+try {
+  return handleNumericResponse(response);
+} catch (ok) {
+  // it's not numeric; that's fine, just continue
+}
+return handleTextResponse(response);
+```
+
+非法的：
+```javascript
+try {
+  shouldFail();
+  fail('expected an error');
+} catch (expected) {
+  
+}
+```
+
+>提示：与其他一些语言不同，像上面这样的模式根本不起作用，因为这将捕获失败抛出的错误。使用`assertThrows()`来代替。
+
+#### `switch`语句
+术语说明：`switch`语句块的花括号内有一个或多个语句组。每个语句组由一个或多个`switch`标签（`case FOO:` 或者 `default:`）组成，后面跟一个或多个语句。
+
+##### 隐式贯穿：注释
+在`switch`语句块内，每个语句组都会突然中止（`break` ,`return`, 或者`throw exception`），或者用注释标记，以指示执行将会继续进入下一个语句组。任何表达隐式贯穿概念的注释（通常是`//fall throuth`）都是可以的。该特殊注释在`switch`块的最后一个语句组中不是必需的。
+
+示例：
+```javascript
+switch (input) {
+  case 1：
+  case 2:
+  	prepareOneOrTwo();
+  	//fall through
+  case 3:
+  	handleOneTwoOrThree();
+  	break;
+  default:
+  	handleLargeNumber(input);
+}
+```
+
+##### `default`语句块是必需的
+每个`switch`语句都包含一个`default`语句组，即使`default`语句组不包含任何代码。
+
+#### `this`
+仅在类的构造器、方法，或者定义在类的构造器和方法中的箭头函数中使用`this`。任何其他使用`this`的地方必须在立即封闭的函数的JSDoc中明确声明`@this`。
+
+永远不要使用`this`指向全局对象，`eval`表达式的上下文，`event`的`target`，或者不必要的`call(), apply()`函数。
+
+### 不允许使用的特性
+
+#### `with`
+不要使用`with`关键字。这会让你的代码更难理解，而且从ES5之后在严格模式下被禁用。
+
+#### 动态代码求值
+不要使用`eval`或者`Function(...string)`构造器（代码加载程序除外）。这些特性是潜在的危险，并且在CSP（内容安全策略）环境中不起作用。
+
+#### 自动分号插入
+始终使用分号终止语句（函数、类定义以及上面提到的除外）。
+
+#### 非标准特性
+不要使用非标准特性。这包括已经被删除的旧特性（例如`WeakMap.clear`），尚未标准化的新特性（例如，当前的TC39工作草案，任何阶段的提案，或提议但尚未完成的Web标准），或仅在某些浏览器中实现的专有特性。仅适用当前ECMA-262或WHATWG标准中定义的功能（请注意，针对特定API，例如Chrome扩展程序或Node.js编写的项目显然可以使用这些API）。非标准语言“扩展”（如某些外部转译器提供的）被禁止。
+
+#### 原生类型包装对象
+永远不要使用`new`对原生类型对象包装（`Boolean`, `Number`, `String`, `Symbol`），也不在类型注解中引入他们。
+
+非法的：
+```javascript
+const /** Boolean */ x = new Boolean(false);
+if (x) alert(typeof x); // alert 'object' - WAT?
+```
+
+包装器可以作为强制函数调用（其优于使用`+`或连接空字符串或创建标志）。
+
+示例：
+```javascript
+const /** boolean */ x = Boolean(0);
+if (!x) alert(typeof x); // alerts 'boolean', as expected
+```
+
+#### 修改内置对象
+永远不要修改内置类型，无论是通过向其构造函数或原型添加方法。避免依赖这样做的库。请注意，JS编译器的运行时库将尽可能提供符合标准的填充，没有别的可以修改内置对象。
+
+除非绝对必须的情况下（例如，第三方API要求），不要将变量添加到全局对象。
