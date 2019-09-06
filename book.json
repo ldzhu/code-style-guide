@@ -1,0 +1,21 @@
+{
+  "author": "liangdong zhu <ldzhu@fiberhome.com>",
+  "description": "fiberhome public R&D style guide",
+  "generator": "site",
+  "pdf": {
+    "fontSize": 14,
+    "footerTemplate": null,
+    "headerTemplate": null,
+    "margin": {
+      "bottom": 36,
+      "left": 100,
+      "right": 100,
+      "top": 36
+    },
+    "pageNumbers": true,
+    "paperSize": "a4"
+  },
+  "plugins": [],
+  "title": "Code Style Guide GitBook",
+  "variables": {}
+}

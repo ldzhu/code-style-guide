@@ -1,6 +1,6 @@
 ## 格式化
 
-**术语说明**：块状结构（block-like construct）指的是一个类、函数、方法或代码块的主体。需要注意的是([章节5.2数组字面量](Language-features.md)和[章节5.3对象字面量](Language-features.md))，任何数组或对象字面量可被选择性地视为块状结构。
+**术语说明**：块状结构（block-like construct）指的是一个类、函数、方法或代码块的主体。需要注意的是([章节5.2数组字面量](language-features.md)和[章节5.3对象字面量](language-features.md))，任何数组或对象字面量可被选择性地视为块状结构。
 
 > 提示：使用`clang-format`。Js社区已努力将 `clang-format`与一些流行的编辑器集成，保证`clang-format`在Js文件上正确执行。
 
@@ -235,7 +235,7 @@ Js代码的列限制为80个字符。除非下面的例外情况，否则超过�
 **例外：**
 
 1. 不可能满足列限制的行(例如，可被复制粘贴的，JSDoc中的一个长URL，或是一个长的shell命令)。
-2. `goog.module`和`goog.require`语句(见[章节3.3 goog.module语句](Source-file-structure.md)和[章节3.3 goog.require语句](Source-file-structure.md))。
+2. `goog.module`和`goog.require`语句(见[章节3.3 goog.module语句](source-file-structure.md)和[章节3.3 goog.require语句](source-file-structure.md))。
 
 ### 换行
 
@@ -389,7 +389,7 @@ doSomething(
 
 ### 注释
 
-本节讨论注释的实现。 JSDoc在[章节7 JSDoc](JSDoc.md)中单独讲解。
+本节讨论注释的实现。 JSDoc在[章节7 JSDoc](doc.md)中单独讲解。
 
 #### 块注释风格
 

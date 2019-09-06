@@ -1,0 +1,12 @@
+{
+  "name": "code-style-guide",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "prepare-env": "npm install -g gitbook-cli@2.3.2 && start /wait _tools/calibre-3.46.0.msi",
+    "start": "gitbook serve",
+    "build": "gitbook build",
+    "pdf": "set path=C:\\Program Files (x86)\\Calibre2;%path% && gitbook pdf"
+  },
+  "private": true
+}

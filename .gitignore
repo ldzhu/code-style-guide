@@ -10,3 +10,6 @@ gen
 
 # gitbook files
 _book
+/_tools/calibre-3.46.0.msi
+/book.pdf
+/node_modules/

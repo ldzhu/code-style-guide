@@ -172,7 +172,7 @@ assertEquals(3, obj.method());
 ```javascript
 /**
  * @param {string} ordinary
- * @param {{num: (number|undefined), str: (string|undefined)}=} param1
+ * @param {\{num: (number|undefined), str: (string|undefined)\}=} param1
  *     num: The number of times to do something.
  *     str: A string to do stuff to.
  */
@@ -181,13 +181,13 @@ function destructured(ordinary, {num, str = 'some default'} = {})
 
 非法的：
 ```javascript
-/** @param {{x: {num: (number|undefined), str: (string|undefined)}}} param1 */
+/** @param {\{x: {num: (number|undefined), str: (string|undefined)}\}} param1 */
 function nestedTooDeeply({x: {num, str}}) {};
-/** @param {{num: (number|undefined), str: (string|undefined)}=} param1 */
+/** @param {\{num: (number|undefined), str: (string|undefined)\}=} param1 */
 function nonShorthandProperty({num: a, str: b} = {}) {};
-/** @param {{a: number, b: number}} param1 */
+/** @param {\{a: number, b: number\}} param1 */
 function computedKey({a, b, [a + b]: c}) {};
-/** @param {{a: number, b: string}=} param1 */
+/** @param {\{a: number, b: string\}=} param1 */
 function nontrivialDefault({a, b} = {a: 2, b: 4}) {};
 ```
 
@@ -261,7 +261,7 @@ Sub.foo();  // illegal: don't call static methods on subclasses that don't defin
 - 如果存在或者即将存在某些子类，包括创建子类的框架，不能立即改成ES6类的语法。如果这样一个类使用ES语法，所有没有使用ES6类语法的下游子类也需要同时修改。
 - 在调用超类构造函数之前，框架需要知道一个已知的`this`值，因为具有ES6超类的构造函数直到`super`调用返回之前无法访问实例的`this`，
 
-在所有其他方面，本样式指南仍然适用于此规则：`let`,` const`，默认参数，`rest`参数和箭头函数都应该在合适的时候使用。
+在所有其他方面，本风格指南仍然适用于此规则：`let`,` const`，默认参数，`rest`参数和箭头函数都应该在合适的时候使用。
 
 `goog.defineClass`允许类似ES6类语法的类的定义：
 ```javascript
