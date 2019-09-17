@@ -211,14 +211,6 @@ switch (animal) {
 每个语句必须以分号结尾，不能依赖自动插入的分号。
 
 
-### 列限制:120
-
-
-Js代码的列限制为120个字符。除非下面的例外情况，否则超过此限制的任何行都必须被换行。
-
-**例外：** 不可能满足列限制的行(例如，可被复制粘贴的，JSDoc中的一个长URL，或是import 一个class)。
-
-
 ### 换行
 
 
@@ -401,27 +393,415 @@ doSomething(
 类型转换需要加上小括号：`/** @type {!Foo} */ (foo)` 。
 
 
-### 注释
+### 列限制:120
 
 
+Js代码的列限制为120个字符。除非下面的例外情况，否则超过此限制的任何行都必须被换行。
 
-#### 块注释风格
+**例外：** 不可能满足列限制的行(例如，可被复制粘贴的，JSDoc中的一个长URL，或是import 一个class)。
 
-块注释与其周围的代码在同一缩进级别。它们可以是`/* ... */`风格，也可以是`// ...`风格。为了在没有额外上下文的情况下使注释较为明显，
-对于多行的`/* ... */`注释，后续行必须以`*`开始， 并且与前一行的`*`对齐。当变量名和方法名不足够表达其含义时，应该在参数后对其添加注释。
 
-```javascript
-/*
- * This is
- * okay.
+### 单个文件只写一个类
+
+单个文件只写一个类。（某个类只在本文件使用除外）
+  
+```typescript
+/* 不推荐*/
+import {Component, NgModule, OnInit} from '@angular/core';
+import {BrowserModule} from '@angular/platform-browser';
+import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
+
+class Hero {
+    id: number;
+    name: string;
+}
+
+@Component({
+    selector: 'my-app',
+    template: `
+        <h1>{{title}}</h1>
+        <pre>{{heroes | json}}</pre>
+      `,
+    styleUrls: ['app/app.component.css']
+})
+class AppComponent implements OnInit {
+    title = 'Tour of Heroes';
+
+    heroes: Hero[] = [];
+
+    ngOnInit() {
+        getHeroes().then(heroes => (this.heroes = heroes));
+    }
+}
+
+@NgModule({
+    imports: [BrowserModule],
+    declarations: [AppComponent],
+    exports: [AppComponent],
+    bootstrap: [AppComponent]
+})
+export class AppModule {
+}
+
+platformBrowserDynamic().bootstrapModule(AppModule);
+
+const HEROES: Hero[] = [
+    {id: 1, name: 'Bombasto'},
+    {id: 2, name: 'Tornado'},
+    {id: 3, name: 'Magneta'}
+];
+
+function getHeroes(): Promise<Hero[]> {
+    return Promise.resolve(HEROES); // TODO: get hero data from the server;
+}
+
+
+/* 推荐*/
+// main.ts
+import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
+import {AppModule} from './app/app.module';
+
+platformBrowserDynamic().bootstrapModule(AppModule);
+
+// app/app.module.ts
+import {NgModule} from '@angular/core';
+import {BrowserModule} from '@angular/platform-browser';
+import {RouterModule} from '@angular/router';
+
+import {AppComponent} from './app.component';
+import {HeroesComponent} from './heroes/heroes.component';
+
+@NgModule({
+    imports: [
+        BrowserModule,
+    ],
+    declarations: [
+        AppComponent,
+        HeroesComponent
+    ],
+    exports: [AppComponent],
+    bootstrap: [AppComponent]
+})
+export class AppModule {
+}
+
+// app/app.component.ts
+import {Component} from '@angular/core';
+import {HeroService} from './heroes';
+
+@Component({
+    selector: 'toh-app',
+    template: `
+        <toh-heroes></toh-heroes>
+      `,
+    styleUrls: ['./app.component.css'],
+    providers: [HeroService]
+})
+export class AppComponent {
+}
+  
+// app/heroes/heroes.component.ts
+import {Component, OnInit} from '@angular/core';
+import {Hero, HeroService} from './shared';
+
+@Component({
+    selector: 'toh-heroes',
+    template: `
+        <pre>{{heroes | json}}</pre>
+      `
+})
+export class HeroesComponent implements OnInit {
+    heroes: Hero[] = [];
+
+    constructor(private heroService: HeroService) {
+    }
+
+    ngOnInit() {
+        this.heroService.getHeroes()
+            .then(heroes => this.heroes = heroes);
+    }
+}
+
+// app/heroes/shared/hero.service.ts
+import {Injectable} from '@angular/core';
+import {HEROES} from './mock-heroes';
+
+@Injectable()
+export class HeroService {
+    getHeroes() {
+        return Promise.resolve(HEROES);
+    }
+}
+
+// app/heroes/shared/hero.model.ts
+export class Hero {
+    id: number;
+    name: string;
+}
+  
+// app/heroes/shared/mock-heroes.ts
+import {Hero} from './hero.model';
+
+export const HEROES: Hero[] = [
+    {id: 1, name: 'Bombasto'},
+    {id: 2, name: 'Tornado'},
+    {id: 3, name: 'Magneta'}
+];
+```
+  
+  
+
+
+### 单个函数不超过200行
+
+当单个函数/方法超过200行时，代码的复杂度变高，可读性变低，应该对函数进行重构来降低复杂度。
+  
+```typescript
+  /* 不推荐*/
+  public handleDataTypeChange(event) {
+      this.selectedDataType = event;
+  
+      // 省略：清空表格数据(10行)
+      this.chartOptions.categories = [];
+      this.chartOptions.series.splice(0, this.chartOptions.series.length);
+  
+      if (this.selectedObject.length === 0) {
+          // 省略：设置chart title(60行)
+  
+      } else {
+          this.loadChartData(this.selectedObject, (data) => {
+              // 省略：预处理chart数据(100行)
+              data.forEach(value => {
+                  this.selectedObject.forEach((item, index) => {
+                  });
+              });
+  
+              // 省略：设置chart title(60行)
+              this.chartOptions.title.text = title;
+              this.chartOptions.title.detailText = detailTitle;
+          });
+      }
+  
+  }
+  
+  /* 推荐*/
+  public handleDataTypeChange(event) {
+      this.selectedDataType = event;
+  
+      this.clearChartData();
+      if (this.selectedObject.length === 0) {
+          this.setChartTitle();
+      } else {
+          this.loadChartData(this.selectedObject, (data) => {
+              this.chartDataHandler(data, this.selectedObject);
+              this.setChartTitle();
+          });
+      }
+  
+  }
+
+  /**
+   * 清空表格数据
+   */
+  private clearChartData(): void {}
+  /**
+   * 设置chart title
+   */
+  private setChartTitle(): void {}
+  /**
+   * 预处理chart数据
+   */
+  private chartDataHandler(): void {}
+  
+  ```
+  
+  
+  
+
+
+### 单个文件一般不超过1000行
+  
+```typescript
+/* 不推荐*/
+
+// 两个tab下分别有一个chart，在一个组件中一并处理;
+// 数据处理部分也写在组件中(导致一个组件内容冗长)
+@Component({
+    selector: 'traffic-add-tab',
+    templateUrl: './add-tab.component.html',
+    styleUrls: ['./add-tab.component.scss']
+})
+export class AddTabComponent implements OnInit, OnDestroy {
+    // ...
+    // echart
+    echart1: any;
+    echart2: any;
+    // 流速、带宽利用率切换
+    chartFlag: boolean = true;
+
+    /**
+     * 数值变化
+     * @param s
+     */
+    changeValue(s) {
+        // ...
+
+        if (this.chartFlag) {
+            // ...
+            CommonUtil.exportChart(this.echart1, this.exportImgName);
+        } else {
+            // ...
+            CommonUtil.exportChart(this.echart2, this.exportImgName);
+        }
+
+        // ...
+    }
+
+    /**
+     * 获取曲线图数据
+     */
+    readChartData(): void {
+        // ...
+        if (this.chartFlag) {
+            this.processCondition1();
+            this.readChartData1();
+        } else {
+            this.processCondition2();
+            this.readChartData2();
+        }
+        // ...
+    }
+    
+    // ...
+}  
+  
+/* 推荐*/
+// 每个组件独立;
+// 组件只保留与模板交互部分的逻辑，其他复杂逻辑放入服务中
+@Component({
+    selector: 'otn-weight-setting',
+    templateUrl: './weight-setting.component.html',
+    styleUrls: ['./weight-setting.component.scss'],
+    providers: [WeightSettingService]
+})
+export class WeightSettingComponent extends BaseComponent implements OnInit {
+    public condition: QueryCondition = QueryConditionFactory.getInstance();
+    public gridData: WeightSettingService;
+
+    constructor(private weightSettingService: WeightSettingService) {
+        super();
+    }
+
+    public ngOnInit(): void {
+        this.gridData = this.weightSettingService;
+        this.getGridData();
+    }
+
+    public dataStateChange(e: DataStateChangeEvent) {
+        if (e.sort) {
+            this.condition.advanced.sorter = e.sort;
+        } else {
+            this.condition.advanced.sorter = [];
+        }
+
+        this.getGridData();
+    }
+
+    // 保存
+    public onSaveBtnClick() {
+        this.weightSettingService.saveGridData();
+    }
+
+    // 刷新
+    public onRefreshBtnClick() {
+        this.condition = QueryConditionFactory.getInstance();
+        this.getGridData();
+    }
+
+    // 获取数据
+    private getGridData() {
+        this.weightSettingService.getGridData(this.condition);
+    }
+}
+```
+  
+  
+  
+
+
+### 删除无效代码
+  
+- 空代码块、未使用到的依赖、成员、函数、导入模块需要删除
+  
+```typescript
+/* 不推荐*/
+/**
+ *  1. AfterViewInit import但未使用
+ *  2. $LspOptionService注入了依赖但未使用
+ *  3. targetNeOptionShow定义了属性但未使用
  */
+import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {TransferSystemOptionService} from './transfer-system-option.service';
+import {LspOptionService} from './lsp-option.service';
 
-// And so
-// is this.
+@Component({
+    selector: 'vapp-lsp-option',
+    templateUrl: './lsp-option.component.html',
+    styleUrls: ['./lsp-option.component.scss'],
+    providers: [LspOptionService, TransferSystemOptionService]
+})
+export class LspOptionComponent implements OnInit {
+    targetNeOptionShow: boolean = false;
 
-/* This is fine, too. */
+    constructor(private $LspOptionService: LspOptionService) {
+    }
 
-someFunction(obviousParam, true /* shouldRender */, 'hello' /* name */);
+    handleSelectedChange(list: any[]) {
+    }
+
+}
+
+/* 推荐*/
+import {Component, OnInit} from '@angular/core';
+import {TransferSystemOptionService} from './transfer-system-option.service';
+
+@Component({
+    selector: 'vapp-lsp-option',
+    templateUrl: './lsp-option.component.html',
+    styleUrls: ['./lsp-option.component.scss'],
+    providers: [TransferSystemOptionService]
+})
+export class LspOptionComponent implements OnInit {
+    constructor() {
+    }
+    
+}
 ```
 
-注释不要封闭在由星号或其它字符绘制的框架里。
+- 注释掉的无用代码需要删除（注释掉的有用代码需添加注释说明）
+  
+```typescript
+/* 不推荐*/
+export interface ColumnSelectorOption {
+    gridId: string;
+    prefixSkip?: number;
+    // suffixSkip?: number;
+    // defaultHidden?: string[];
+}
+
+/* 推荐*/
+export interface ColumnSelectorOption {
+    gridId: string;
+    prefixSkip?: number;
+    /* comment by ldzhu: 暂未实现该配置项 */
+    // suffixSkip?: number;
+}
+```
+
+- 断点和控制台输出语句需要删除
+  
+```typescript
+/* 不推荐*/
+debugger;
+console.log(res.data);
+```

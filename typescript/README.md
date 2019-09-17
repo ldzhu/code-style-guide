@@ -8,6 +8,7 @@
 
 
 - [命名规则](naming-rules.md)
+- [语言特性](language-features.md)
 - [风格规则](style-rules.md)
 - [格式化规则](formatting-rules.md)
 - [元数据规则](meta-rules.md)
